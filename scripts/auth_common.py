@@ -19,9 +19,6 @@ def test_authentication_enabled():
     if require_access_control and not use_authentication:
         print("AZURE_ENFORCE_ACCESS_CONTROL is true, but AZURE_USE_AUTHENTICATION is false. Stopping...")
         return False
-    if require_access_control and use_authentication:
-        print("AZURE_ENFORCE_ACCESS_CONTROL is true, but AZURE_USE_AUTHENTICATION is true. Stopping...")
-        return False    
 
     if not use_authentication:
         return False
