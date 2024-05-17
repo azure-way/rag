@@ -22,6 +22,7 @@ from msgraph.generated.models.spa_application import SpaApplication
 from msgraph.generated.models.web_application import WebApplication
 
 from auth_common import get_application, test_authentication_enabled
+from helpers import getenvordefault
 
 
 async def create_application(graph_client: GraphServiceClient, request_app: Application) -> Tuple[str, str]:
@@ -46,7 +47,7 @@ async def add_client_secret(graph_client: GraphServiceClient, app_id: str) -> st
 async def create_or_update_application_with_secret(
     graph_client: GraphServiceClient, app_id_env_var: str, app_secret_env_var: str, request_app: Application
 ) -> Tuple[str, str, bool]:
-    app_id = os.getenv(app_id_env_var, "no-id")
+    app_id = getenvordefault(app_id_env_var, "no-id")
     created_app = False
     object_id = None
     if app_id != "no-id":
@@ -62,7 +63,7 @@ async def create_or_update_application_with_secret(
         update_azd_env(app_id_env_var, app_id)
         created_app = True
 
-    if object_id and os.getenv(app_secret_env_var, "no-secret") == "no-secret":
+    if object_id and os.getenvordefault(app_secret_env_var, "no-secret") == "no-secret":
         print(f"Adding client secret to {app_id}")
         client_secret = await add_client_secret(graph_client, object_id)
         update_azd_env(app_secret_env_var, client_secret)
