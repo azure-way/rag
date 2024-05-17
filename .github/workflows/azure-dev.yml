@@ -125,6 +125,12 @@ jobs:
       #   if: ${{ env.AZURE_USE_AUTHENTICATION == 'true' && github.event.inputs.first_deploy == 'false' }}
       #   run: pwsh ./scripts/manageacl.ps1 --acl-action enable_acls
 
+      # workaround for: https://github.com/Azure/azure-dev/issues/3920
+      - name: Create azd env
+        run: azd env new $AZURE_ENV_NAME
+        env:
+          AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
+
       - name: Provision Infrastructure
         run: azd provision --no-prompt --debug 
         env:
