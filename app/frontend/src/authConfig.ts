@@ -136,7 +136,7 @@ export const isLoggedIn = (client: IPublicClientApplication | undefined): boolea
 // Use the access token from app services login if available
 export const getToken = (client: IPublicClientApplication): Promise<string | undefined> => {
     if (appServicesToken) {
-        return Promise.resolve(appServicesToken.access_token);
+        return Promise.resolve(appServicesToken.id_token);
     }
 
     return client
