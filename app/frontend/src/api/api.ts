@@ -5,6 +5,8 @@ import { useLogin, appServicesToken } from "../authConfig";
 
 export function getHeaders(idToken: string | undefined): Record<string, string> {
     // If using login and not using app services, add the id token of the logged in account as the authorization
+    console.log("useLogin", useLogin);
+    console.log("idToken", idToken);
     if (useLogin && idToken) {
         return { Authorization: `Bearer ${idToken}` };
     }

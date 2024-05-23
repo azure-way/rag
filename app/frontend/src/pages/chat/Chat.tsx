@@ -124,7 +124,7 @@ const Chat = () => {
     };
 
     const client = useLogin ? useMsal().instance : undefined;
-
+    console.info("Client: ", client);
     const makeApiRequest = async (question: string) => {
         lastQuestionRef.current = question;
 
@@ -134,7 +134,8 @@ const Chat = () => {
         setActiveAnalysisPanelTab(undefined);
 
         const token = client ? await getToken(client) : undefined;
-
+        console.info("Token: ", token);
+        
         try {
             const messages: ResponseMessage[] = answers.flatMap(a => [
                 { content: a[0], role: "user" },
