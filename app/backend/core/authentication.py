@@ -56,6 +56,7 @@ class AuthenticationHelper:
             f"https://sts.windows.net/{tenant_id}/",
             f"https://login.microsoftonline.com/{tenant_id}/v2.0",
         ]
+        self.valid_groups = ["270b4323-456c-49f2-a9a6-9a9031d61f6e"]
         self.valid_audiences = [f"api://{server_app_id}", str(server_app_id)]
         # See https://learn.microsoft.com/entra/identity-platform/access-tokens#validate-the-issuer for more information on token validation
         self.key_url = f"{self.authority}/discovery/v2.0/keys"
@@ -309,11 +310,13 @@ class AuthenticationHelper:
         rsa_key = None
         issuer = None
         audience = None
+        group = None
         try:
             unverified_header = jwt.get_unverified_header(token)
             unverified_claims = jwt.get_unverified_claims(token)
             issuer = unverified_claims.get("iss")
             audience = unverified_claims.get("aud")
+            group = unverified_claims.get("groups")
             for key in jwks["keys"]:
                 if key["kid"] == unverified_header["kid"]:
                     rsa_key = {"kty": key["kty"], "kid": key["kid"], "use": key["use"], "n": key["n"], "e": key["e"]}
@@ -339,6 +342,10 @@ class AuthenticationHelper:
                 401,
             )
 
+        if group not in self.valid_groups:
+            raise AuthError(
+                {"code": "invalid_header", "description": f"Group {group} not in {','.join(self.valid_groups)}"}, 401
+            )
         try:
             jwt.decode(token, rsa_key, algorithms=["RS256"], audience=audience, issuer=issuer)
         except ExpiredSignatureError as jwt_expired_exc:
