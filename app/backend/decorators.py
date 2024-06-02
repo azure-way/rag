@@ -50,7 +50,10 @@ def authenticated(route_fn: Callable[[Dict[str, Any]], Any]):
         auth_helper = current_app.config[CONFIG_AUTH_CLIENT]
         try:
             auth_claims = await auth_helper.get_auth_claims_if_enabled(request.headers)
-        except AuthError:
+        except AuthError as auth_error:
+            if auth_error.group_error: 
+                logging.exception("authenticated::Group permissions error %s", auth_error)
+                return error_response(auth_error, route="/content")
             abort(403)
 
         return await route_fn(auth_claims)
