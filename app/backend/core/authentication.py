@@ -24,6 +24,7 @@ class AuthError(Exception):
     def __init__(self, error, status_code):
         self.error = error
         self.status_code = status_code
+        self.group_error = False
 
     def __str__(self) -> str:
         return self.error or ""
@@ -346,7 +347,9 @@ class AuthenticationHelper:
             raise AuthError(
                 {
                     "code": "invalid_header", 
-                    "description": f"Group {self.valid_group} not in {','.join(groups)}"
+                    "description": f"To access this demo application, you must have be granted by Karol Pieciukiewicz on the LinkedIn platform. Follow this profile for more information",
+                    "description": f"Group {self.valid_group} not in {','.join(groups)}",
+                    "group_error": True
                 }, 
                 401,
             )
