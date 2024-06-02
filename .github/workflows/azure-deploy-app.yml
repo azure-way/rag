@@ -1,15 +1,7 @@
-name: Deploy
+name: Deploy App
 on:
   workflow_dispatch:
-  push:
-    # Run when commits are pushed to mainline branch (main or master)
-    # Set this to the mainline branch you are using
-    branches:
-      - main
-      - master
 
-
-  
 # GitHub Actions workflow to deploy to Azure using azd
 # To configure required secrets for connecting to Azure, simply run `azd pipeline config`
 
@@ -112,14 +104,6 @@ jobs:
       - name: Create azd env
         run: azd env new $AZURE_ENV_NAME
         env:
-          AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
-
-      - name: Provision Infrastructure
-        run: azd provision --no-prompt 
-        env:
-          AZD_INITIAL_ENVIRONMENT_CONFIG: ${{ secrets.AZD_INITIAL_ENVIRONMENT_CONFIG }}
-          AZURE_SERVER_APP_SECRET: ${{ secrets.AZURE_SERVER_APP_SECRET }}
-          AZURE_CLIENT_APP_SECRET: ${{ secrets.AZURE_CLIENT_APP_SECRET }}
           AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
 
       - name: Deploy Application
