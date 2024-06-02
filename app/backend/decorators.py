@@ -26,7 +26,7 @@ def authenticated_path(route_fn: Callable[[str, Dict[str, Any]], Any]):
         except AuthError as auth_error:
             if auth_error.group_error: 
                 logging.exception("Group permissions error %s", auth_error)
-              abort(403, auth_error.description)
+                abort(403, auth_error.description)
             abort(403)
         except Exception as error:
             logging.exception("Problem checking path auth %s", error)
