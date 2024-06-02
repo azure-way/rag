@@ -203,12 +203,9 @@ const Chat = () => {
     useEffect(() => chatMessageStreamEnd.current?.scrollIntoView({ behavior: "smooth" }), [isLoading]);
     useEffect(() => chatMessageStreamEnd.current?.scrollIntoView({ behavior: "auto" }), [streamedAnswers]);
     useEffect(async () => {
-        if (useLogin) {
-            const token = await getToken(useMsal().instance)
-            getConfig(token);
-        } else {
-            getConfig(undefined);
-        }
+        const client = useLogin ? useMsal().instance : undefined;
+        const token = client ? await getToken(client) : undefined;
+        getConfig(token);
     }, []);
 
     const onPromptTemplateChange = (_ev?: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
