@@ -211,9 +211,10 @@ const Chat = () => {
 
     useEffect(() => chatMessageStreamEnd.current?.scrollIntoView({ behavior: "smooth" }), [isLoading]);
     useEffect(() => chatMessageStreamEnd.current?.scrollIntoView({ behavior: "auto" }), [streamedAnswers]);
-    useEffect(() => {
+    useEffect(async () => {
         if (useLogin) {
-            getConfig(client?.getAccount()?.idToken);
+            const token = await getToken(useMsal().instance)
+            getConfig(token);
         } else {
             getConfig(undefined);
         }
