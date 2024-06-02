@@ -73,7 +73,7 @@ from config import (
     CONFIG_USER_UPLOAD_ENABLED,
     CONFIG_VECTOR_SEARCH_ENABLED,
 )
-from core.authentication import AuthenticationHelper
+from core.authentication import AuthError, AuthenticationHelper
 from decorators import authenticated, authenticated_path
 from error import error_dict, error_response
 from prepdocs import (
@@ -239,6 +239,7 @@ def auth_setup():
 
 @bp.route("/config", methods=["GET"])
 def config():
+    auth_helper = current_app.config[CONFIG_AUTH_CLIENT]
     return jsonify(
         {
             "showGPT4VOptions": current_app.config[CONFIG_GPT4V_DEPLOYED],
@@ -248,6 +249,7 @@ def config():
             "showSpeechInput": current_app.config[CONFIG_SPEECH_INPUT_ENABLED],
             "showSpeechOutputBrowser": current_app.config[CONFIG_SPEECH_OUTPUT_BROWSER_ENABLED],
             "showSpeechOutputAzure": current_app.config[CONFIG_SPEECH_OUTPUT_AZURE_ENABLED],
+            "hasGroupAccess": auth_helper.user_has_group_access(request.headers)
         }
     )
 
