@@ -334,7 +334,6 @@ class AuthenticationHelper:
                 {
                     "code": "invalid_header", 
                     "description": f"To access this demo application, you must have be granted by Karol Pieciukiewicz on the LinkedIn platform. Follow this profile for more information",
-                    "description": f"Group {self.valid_group} not in {','.join(groups)}",
                     "group_error": True
                 }, 
                 401,
