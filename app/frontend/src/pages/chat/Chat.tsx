@@ -74,7 +74,10 @@ const Chat = () => {
     const [showSpeechOutputAzure, setShowSpeechOutputAzure] = useState<boolean>(false);
 
     const getConfig = async () => {
-        configApi().then(config => {
+        const client = useLogin ? useMsal().instance : undefined;
+        const token = client ? await getToken(client) : undefined;
+
+        configApi(token).then(config => {
             setShowGPT4VOptions(config.showGPT4VOptions);
             setUseSemanticRanker(config.showSemanticRankerOption);
             setShowSemanticRankerOption(config.showSemanticRankerOption);
