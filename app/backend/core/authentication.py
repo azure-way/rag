@@ -270,6 +270,19 @@ class AuthenticationHelper:
 
         return allowed
 
+    async def user_has_group_access(self, headers) -> bool:
+        try:
+            token = self.get_token_auth_header(headers)
+            unverified_claims = jwt.get_unverified_claims(token)
+            groups = unverified_claims.get("groups") or []
+            if self.valid_group not in groups:
+                return False
+            return True
+        except Exception as exc:
+            raise AuthError(
+                {"code": "invalid_header", "description": "Unable to parse authorization token."}, 401
+            ) from exc
+    
     # See https://github.com/Azure-Samples/ms-identity-python-on-behalf-of/blob/939be02b11f1604814532fdacc2c2eccd198b755/FlaskAPI/helpers/authorization.py#L44
     async def validate_access_token(self, token: str):
         """
@@ -338,6 +351,7 @@ class AuthenticationHelper:
                 }, 
                 401,
             )
+        
         try:
             jwt.decode(token, rsa_key, algorithms=["RS256"], audience=audience, issuer=issuer)
         except ExpiredSignatureError as jwt_expired_exc:

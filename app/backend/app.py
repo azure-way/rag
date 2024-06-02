@@ -60,7 +60,7 @@ from config import (
     CONFIG_USER_UPLOAD_ENABLED,
     CONFIG_VECTOR_SEARCH_ENABLED,
 )
-from core.authentication import AuthenticationHelper
+from core.authentication import AuthError, AuthenticationHelper
 from decorators import authenticated, authenticated_path
 from error import error_dict, error_response
 from prepdocs import (
@@ -226,12 +226,14 @@ def auth_setup():
 
 @bp.route("/config", methods=["GET"])
 def config():
+    auth_helper = current_app.config[CONFIG_AUTH_CLIENT]
     return jsonify(
         {
             "showGPT4VOptions": current_app.config[CONFIG_GPT4V_DEPLOYED],
             "showSemanticRankerOption": current_app.config[CONFIG_SEMANTIC_RANKER_DEPLOYED],
             "showVectorOption": current_app.config[CONFIG_VECTOR_SEARCH_ENABLED],
             "showUserUpload": current_app.config[CONFIG_USER_UPLOAD_ENABLED],
+            "hasGroupAccess": auth_helper.user_has_group_access(request.headers)
         }
     )
 
