@@ -316,7 +316,7 @@ class AuthenticationHelper:
             unverified_claims = jwt.get_unverified_claims(token)
             issuer = unverified_claims.get("iss")
             audience = unverified_claims.get("aud")
-            groups = unverified_claims.get("groups")
+            groups = unverified_claims.get("groups") or []
             for key in jwks["keys"]:
                 if key["kid"] == unverified_header["kid"]:
                     rsa_key = {"kty": key["kty"], "kid": key["kid"], "use": key["use"], "n": key["n"], "e": key["e"]}
