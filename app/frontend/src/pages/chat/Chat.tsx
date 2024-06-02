@@ -73,10 +73,7 @@ const Chat = () => {
     const [showSpeechOutputBrowser, setShowSpeechOutputBrowser] = useState<boolean>(false);
     const [showSpeechOutputAzure, setShowSpeechOutputAzure] = useState<boolean>(false);
 
-    const getConfig = async () => {
-        const client = useLogin ? useMsal().instance : undefined;
-        const token = client ? await getToken(client) : undefined;
-
+    const getConfig = async (token: string | undefined) => {
         configApi(token).then(config => {
             setShowGPT4VOptions(config.showGPT4VOptions);
             setUseSemanticRanker(config.showSemanticRankerOption);
@@ -215,7 +212,11 @@ const Chat = () => {
     useEffect(() => chatMessageStreamEnd.current?.scrollIntoView({ behavior: "smooth" }), [isLoading]);
     useEffect(() => chatMessageStreamEnd.current?.scrollIntoView({ behavior: "auto" }), [streamedAnswers]);
     useEffect(() => {
-        getConfig();
+        if (useLogin) {
+            getConfig(client?.getAccount()?.idToken);
+        } else {
+            getConfig(undefined);
+        }
     }, []);
 
     useEffect(() => {
