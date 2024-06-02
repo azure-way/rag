@@ -52,7 +52,7 @@ def authenticated(route_fn: Callable[[Dict[str, Any]], Any]):
             auth_claims = await auth_helper.get_auth_claims_if_enabled(request.headers)
         except AuthError as auth_error:
             if auth_error.group_error: 
-                logging.exception("authenticated::Group permissions error %s", auth_error)
+                logging.debug("authenticated::Group permissions error %s", auth_error)
                 abort(403, auth_error.description)
             abort(403)
 
