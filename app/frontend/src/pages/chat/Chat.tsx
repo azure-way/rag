@@ -529,7 +529,7 @@ const Chat = () => {
                     </Panel>
                 </div>
             </div>
-        );
+        )
     );
 };
 
