@@ -80,18 +80,20 @@ const Chat = () => {
     const client = useMsal().instance;
 
     const getConfig = async () => {
-        configApi().then(config => {
-            setShowGPT4VOptions(config.showGPT4VOptions);
-            setUseSemanticRanker(config.showSemanticRankerOption);
-            setShowSemanticRankerOption(config.showSemanticRankerOption);
-            setShowVectorOption(config.showVectorOption);
-            if (!config.showVectorOption) {
-                setRetrievalMode(RetrievalMode.Text);
-            }
-            setShowUserUpload(config.showUserUpload);
-            setShowSpeechInput(config.showSpeechInput);
-            setShowSpeechOutputBrowser(config.showSpeechOutputBrowser);
-            setShowSpeechOutputAzure(config.showSpeechOutputAzure);
+        const token = getToken(client).then(token => {
+            configApi(token).then(config => {
+                setShowGPT4VOptions(config.showGPT4VOptions);
+                setUseSemanticRanker(config.showSemanticRankerOption);
+                setShowSemanticRankerOption(config.showSemanticRankerOption);
+                setShowVectorOption(config.showVectorOption);
+                if (!config.showVectorOption) {
+                    setRetrievalMode(RetrievalMode.Text);
+                }
+                setShowUserUpload(config.showUserUpload);
+                setShowSpeechInput(config.showSpeechInput);
+                setShowSpeechOutputBrowser(config.showSpeechOutputBrowser);
+                setShowSpeechOutputAzure(config.showSpeechOutputAzure);
+            });
         });
     };
 
@@ -137,7 +139,7 @@ const Chat = () => {
         };
         return fullResponse;
     };
-    
+
     const makeApiRequest = async (question: string) => {
         lastQuestionRef.current = question;
 
@@ -218,7 +220,6 @@ const Chat = () => {
     useEffect(() => {
         getConfig();
     }, []);
-
 
     useEffect(() => {
         if (answers && showSpeechOutputAzure) {
