@@ -14,12 +14,13 @@ const Layout = () => {
             <header className={styles.header} role={"banner"}>
                 <div className={styles.headerContainer}>
                     <Link to="/" className={styles.headerTitleContainer}>
-                        <h3 className={styles.headerTitle}>GPT + Enterprise data | AzureWay</h3>
+                        <h3 className={styles.headerTitle}>GPT + Your data | AzureWay</h3>
                     </Link>
+                    <h4 className={styles.headerRightText}>AzureWay</h4>
                     <nav>
                         <ul className={styles.headerNavList}>
                             <li className={styles.headerNavLeftMargin}>
-                                AzureWay <a href="https://azureway.cloud" target={"_blank"} title="AzureWay by Karol Pieciukiewicz">
+                                 <a href="https://azureway.cloud" target={"_blank"} title="AzureWay by Karol Pieciukiewicz">
                                     <img
                                         src={github}
                                         alt="Azureway logo"

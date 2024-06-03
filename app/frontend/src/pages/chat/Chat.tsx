@@ -313,21 +313,18 @@ const Chat = () => {
         setSelectedAnswer(index);
     };
 
-    return showGroupError ? (
-        <div className={styles.chatRoot}>
-            <div className={styles.chatContainer}>
-                <div className={styles.chatEmptyState}>
-                    <h1 className={styles.chatEmptyStateTitle}>You do not have access to this application.</h1>
-                    <h2 className={styles.chatEmptyStateSubtitle}>
-                        You can obtain access from Karol Pieciukiewicz in <a href="https://www.linkedin.com/in/karol-pieciukiewicz/">LinkedIn portal</a>
-                    </h2>
-                    <h2 className={styles.chatEmptyStateSubtitle}>
-                        Access is granted periodically. Subscribe for updates and leave a comment and reaction under the post about the new access parts. The
-                        first reactions will be granted access.
-                    </h2>
+    return (
+        showGroupError ? (
+            <div className={styles.chatRoot}>
+                <div className={styles.chatContainer}>
+                    <div className={styles.chatEmptyState}>
+                        <h1 className={styles.chatEmptyStateTitle}>You do not have access to this application.</h1>
+                        <h2 className={styles.chatEmptyStateSubtitle}>You can obtain access from Karol Pieciukiewicz in <a href="https://www.linkedin.com/in/karol-pieciukiewicz/">LinkedIn portal</a></h2>
+                        <h2 className={styles.chatEmptyStateSubtitle}>Access is granted periodically. Subscribe for updates and leave a comment and reaction under the post about the new access parts. The first reactions will be granted access.</h2>
+                        <h2 className={styles.chatEmptyStateSubtitle}>In the application, you can index your own documents and interact with them. Each user has access only to their own documents.</h2>
+                    </div>
                 </div>
             </div>
-        </div>
     ) : (
         <div className={styles.container}>
             <div className={styles.commandsContainer}>
