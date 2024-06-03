@@ -1,5 +1,7 @@
 import { Outlet, NavLink, Link } from "react-router-dom";
 
+import {Helmet} from "react-helmet";
+
 import github from "../../assets/azureway.png";
 
 import styles from "./Layout.module.css";
@@ -11,10 +13,11 @@ import { LoginButton } from "../../components/LoginButton";
 const Layout = () => {
     return (
         <div className={styles.layout}>
-            <meta name="author" content="Karol Pieciukiewicz" />
-            <meta name="keywords" content="Retrieval Augmented Generation, RAG, Azure OpenAI, ChatGPT, Chat, RAG Free demo, own files, RAG chat, own data, upload files, index files" />
-            <meta name="description" content="Retrieval Augmented Generation based on the Azure OpenAI with possibilty to index own documents. Free access." />
-
+            <Helmet>
+                <meta name="author" content="Karol Pieciukiewicz" />
+                <meta name="keywords" content="Retrieval Augmented Generation, RAG, Azure OpenAI, ChatGPT, Chat, RAG Free demo, own files, RAG chat, own data, upload files, index files" />
+                <meta name="description" content="Retrieval Augmented Generation based on the Azure OpenAI with possibilty to index own documents. Free access." />
+            </Helmet>
             <header className={styles.header} role={"banner"}>
                 <div className={styles.headerContainer}>
                     <a href="https://azureway.cloud" target={"_blank"} className={styles.headerTitleContainer}>
