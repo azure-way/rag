@@ -80,7 +80,7 @@ const Chat = () => {
     const client = useMsal().instance;
 
     const getConfig = async () => {
-        const token = getToken(client).then(token => {
+        getToken(client).then(token => {
             configApi(token).then(config => {
                 setShowGPT4VOptions(config.showGPT4VOptions);
                 setUseSemanticRanker(config.showSemanticRankerOption);
