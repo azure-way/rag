@@ -270,7 +270,7 @@ class AuthenticationHelper:
 
         return allowed
 
-    async def user_has_group_access(self, headers) -> bool:
+    def user_has_group_access(self, headers) -> bool:
         try:
             token = self.get_token_auth_header(headers)
             unverified_claims = jwt.get_unverified_claims(token)
