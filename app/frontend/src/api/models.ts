@@ -85,6 +85,7 @@ export type Config = {
     showSemanticRankerOption: boolean;
     showVectorOption: boolean;
     showUserUpload: boolean;
+    hasGroupAccess: boolean;
 };
 
 export type SimpleAPIResponse = {
