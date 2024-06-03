@@ -18,18 +18,13 @@ const Layout = () => {
                     </Link>
                     <nav>
                         <ul className={styles.headerNavList}>
-                            <li>
-                                <NavLink to="/" className={({ isActive }) => (isActive ? styles.headerNavPageLinkActive : styles.headerNavPageLink)}>
-                                    Chat
-                                </NavLink>
-                            </li>
                             <li className={styles.headerNavLeftMargin}>
-                                <a href="https://azureway.cloud" target={"_blank"} title="AzureWay by Karol Pieciukiewicz">
+                                AzureWay <a href="https://azureway.cloud" target={"_blank"} title="AzureWay by Karol Pieciukiewicz">
                                     <img
                                         src={github}
                                         alt="Azureway logo"
-                                        width="20px"
-                                        height="20px"
+                                        width="80px"
+                                        height="80px"
                                         className={styles.githubLogo}
                                     />
                                 </a>
