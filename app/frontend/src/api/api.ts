@@ -14,11 +14,10 @@ export function getHeaders(idToken: string | undefined): Record<string, string> 
     return {};
 }
 
-export async function configApi(idToken: string | undefined): Promise<Config> {
+export async function configApi(): Promise<Config> {
     
     const response = await fetch(`${BACKEND_URI}/config`, {
         method: "GET",
-        headers: { ...getHeaders(idToken), "Content-Type": "application/json" },
     });
 
     return (await response.json()) as Config;
