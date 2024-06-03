@@ -54,21 +54,27 @@ export function Component(): JSX.Element {
     const [activeCitation, setActiveCitation] = useState<string>();
     const [activeAnalysisPanelTab, setActiveAnalysisPanelTab] = useState<AnalysisPanelTabs | undefined>(undefined);
 
-    const client = useLogin ? useMsal().instance : undefined;
+    if (!useLogin) {
+        throw new Error("The Chat component requires useLogin to be true");
+    }
+
+    const client = useMsal().instance;
 
     const getConfig = async () => {
-        configApi().then(config => {
-            setShowGPT4VOptions(config.showGPT4VOptions);
-            setUseSemanticRanker(config.showSemanticRankerOption);
-            setShowSemanticRankerOption(config.showSemanticRankerOption);
-            setShowVectorOption(config.showVectorOption);
-            if (!config.showVectorOption) {
-                setRetrievalMode(RetrievalMode.Text);
-            }
-            setShowUserUpload(config.showUserUpload);
-            setShowSpeechInput(config.showSpeechInput);
-            setShowSpeechOutputBrowser(config.showSpeechOutputBrowser);
-            setShowSpeechOutputAzure(config.showSpeechOutputAzure);
+        getToken(client).then(token => {
+            configApi(token).then(config => {
+                setShowGPT4VOptions(config.showGPT4VOptions);
+                setUseSemanticRanker(config.showSemanticRankerOption);
+                setShowSemanticRankerOption(config.showSemanticRankerOption);
+                setShowVectorOption(config.showVectorOption);
+                if (!config.showVectorOption) {
+                    setRetrievalMode(RetrievalMode.Text);
+                }
+                setShowUserUpload(config.showUserUpload);
+                setShowSpeechInput(config.showSpeechInput);
+                setShowSpeechOutputBrowser(config.showSpeechOutputBrowser);
+                setShowSpeechOutputAzure(config.showSpeechOutputAzure);
+            });
         });
     };
 
