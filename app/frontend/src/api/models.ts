@@ -88,6 +88,7 @@ export type Config = {
     showSpeechInput: boolean;
     showSpeechOutputBrowser: boolean;
     showSpeechOutputAzure: boolean;
+    hasGroupAccess: boolean;
 };
 
 export type SimpleAPIResponse = {

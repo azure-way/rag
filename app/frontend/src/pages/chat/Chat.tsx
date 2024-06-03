@@ -72,6 +72,7 @@ const Chat = () => {
     const [showSpeechInput, setShowSpeechInput] = useState<boolean>(false);
     const [showSpeechOutputBrowser, setShowSpeechOutputBrowser] = useState<boolean>(false);
     const [showSpeechOutputAzure, setShowSpeechOutputAzure] = useState<boolean>(false);
+    const [showGroupError, setShowGroupError] = useState<boolean>(false);
 
     if (!useLogin) {
         throw new Error("The Chat component requires useLogin to be true");
@@ -93,6 +94,7 @@ const Chat = () => {
                 setShowSpeechInput(config.showSpeechInput);
                 setShowSpeechOutputBrowser(config.showSpeechOutputBrowser);
                 setShowSpeechOutputAzure(config.showSpeechOutputAzure);
+                setShowGroupError(!config.hasGroupAccess);
             });
         });
     };
@@ -311,7 +313,22 @@ const Chat = () => {
         setSelectedAnswer(index);
     };
 
-    return (
+    return showGroupError ? (
+        <div className={styles.chatRoot}>
+            <div className={styles.chatContainer}>
+                <div className={styles.chatEmptyState}>
+                    <h1 className={styles.chatEmptyStateTitle}>You do not have access to this application.</h1>
+                    <h2 className={styles.chatEmptyStateSubtitle}>
+                        You can obtain access from Karol Pieciukiewicz in <a href="https://www.linkedin.com/in/karol-pieciukiewicz/">LinkedIn portal</a>
+                    </h2>
+                    <h2 className={styles.chatEmptyStateSubtitle}>
+                        Access is granted periodically. Subscribe for updates and leave a comment and reaction under the post about the new access parts. The
+                        first reactions will be granted access.
+                    </h2>
+                </div>
+            </div>
+        </div>
+    ) : (
         <div className={styles.container}>
             <div className={styles.commandsContainer}>
                 <ClearChatButton className={styles.commandButton} onClick={clearChat} disabled={!lastQuestionRef.current || isLoading} />
