@@ -239,7 +239,6 @@ def auth_setup():
 
 @bp.route("/config", methods=["GET"])
 def config():
-    auth_helper = current_app.config[CONFIG_AUTH_CLIENT]
     return jsonify(
         {
             "showGPT4VOptions": current_app.config[CONFIG_GPT4V_DEPLOYED],
