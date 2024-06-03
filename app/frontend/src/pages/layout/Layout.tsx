@@ -10,11 +10,11 @@ import { LoginButton } from "../../components/LoginButton";
 
 const Layout = () => {
     return (
-        <meta name="author" content="Karol Pieciukiewicz" />
-        <meta name="keywords" content="Retrieval Augmented Generation, RAG, Azure OpenAI, ChatGPT, Chat, RAG Free demo, own files, RAG chat, own data, upload files, index files" />
-        <meta name="description" content="Retrieval Augmented Generation based on the Azure OpenAI with possibilty to index own documents. Free access." />
-
         <div className={styles.layout}>
+            <meta name="author" content="Karol Pieciukiewicz" />
+            <meta name="keywords" content="Retrieval Augmented Generation, RAG, Azure OpenAI, ChatGPT, Chat, RAG Free demo, own files, RAG chat, own data, upload files, index files" />
+            <meta name="description" content="Retrieval Augmented Generation based on the Azure OpenAI with possibilty to index own documents. Free access." />
+
             <header className={styles.header} role={"banner"}>
                 <div className={styles.headerContainer}>
                     <a href="https://azureway.cloud" target={"_blank"} className={styles.headerTitleContainer}>
