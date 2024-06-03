@@ -53,7 +53,7 @@ const Chat = () => {
     const chatMessageStreamEnd = useRef<HTMLDivElement | null>(null);
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [isStreaming, setIsStreaming] = useState<boolean>(false);
+    const [isStreaming, setIsStreaming] = useState<boolean>(false); 
     const [error, setError] = useState<unknown>();
 
     const [activeCitation, setActiveCitation] = useState<string>();
@@ -74,15 +74,17 @@ const Chat = () => {
     const client = useMsal().instance;
 
     const getConfig = async () => {
-        configApi().then(config => {
-            setShowGPT4VOptions(config.showGPT4VOptions);
-            setUseSemanticRanker(config.showSemanticRankerOption);
-            setShowSemanticRankerOption(config.showSemanticRankerOption);
-            setShowVectorOption(config.showVectorOption);
-            if (!config.showVectorOption) {
-                setRetrievalMode(RetrievalMode.Text);
-            }
-            setShowUserUpload(config.showUserUpload);
+        const token = getToken(client).then(token => {
+            configApi(token).then(config => {
+                setShowGPT4VOptions(config.showGPT4VOptions);
+                setUseSemanticRanker(config.showSemanticRankerOption);
+                setShowSemanticRankerOption(config.showSemanticRankerOption);
+                setShowVectorOption(config.showVectorOption);
+                if (!config.showVectorOption) {
+                    setRetrievalMode(RetrievalMode.Text);
+                }
+                setShowUserUpload(config.showUserUpload);
+            });
         });
     };
 
