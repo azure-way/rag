@@ -67,8 +67,14 @@ const Chat = () => {
     const [showVectorOption, setShowVectorOption] = useState<boolean>(false);
     const [showUserUpload, setShowUserUpload] = useState<boolean>(false);
 
-    const getConfig = async (token: string | undefined) => {
-        configApi(token).then(config => {
+    if (!useLogin) {
+        throw new Error("The Chat component requires useLogin to be true");
+    }
+
+    const client = useMsal().instance;
+
+    const getConfig = async () => {
+        configApi().then(config => {
             setShowGPT4VOptions(config.showGPT4VOptions);
             setUseSemanticRanker(config.showSemanticRankerOption);
             setShowSemanticRankerOption(config.showSemanticRankerOption);
@@ -122,8 +128,6 @@ const Chat = () => {
         };
         return fullResponse;
     };
-
-    const client = useLogin ? useMsal().instance : undefined;
     
     const makeApiRequest = async (question: string) => {
         lastQuestionRef.current = question;
@@ -203,9 +207,7 @@ const Chat = () => {
     useEffect(() => chatMessageStreamEnd.current?.scrollIntoView({ behavior: "smooth" }), [isLoading]);
     useEffect(() => chatMessageStreamEnd.current?.scrollIntoView({ behavior: "auto" }), [streamedAnswers]);
     useEffect(async () => {
-        const client = useLogin ? useMsal().instance : undefined;
-        const token = client ? await getToken(client) : undefined;
-        getConfig(token);
+        getConfig();
     }, []);
 
     const onPromptTemplateChange = (_ev?: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
