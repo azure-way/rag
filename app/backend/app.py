@@ -299,7 +299,7 @@ async def speech():
 
 
 @bp.post("/upload")
-@authenticated
+@authenticatedGroup
 async def upload(auth_claims: dict[str, Any]):
     request_files = await request.files
     if "file" not in request_files:
@@ -328,7 +328,7 @@ async def upload(auth_claims: dict[str, Any]):
 
 
 @bp.post("/delete_uploaded")
-@authenticated
+@authenticatedGroup
 async def delete_uploaded(auth_claims: dict[str, Any]):
     request_json = await request.get_json()
     filename = request_json.get("filename")
@@ -343,7 +343,7 @@ async def delete_uploaded(auth_claims: dict[str, Any]):
 
 
 @bp.get("/list_uploaded")
-@authenticated
+@authenticatedGroup
 async def list_uploaded(auth_claims: dict[str, Any]):
     user_oid = auth_claims["oid"]
     user_blob_container_client: FileSystemClient = current_app.config[CONFIG_USER_BLOB_CONTAINER_CLIENT]

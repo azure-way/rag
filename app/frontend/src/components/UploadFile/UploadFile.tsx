@@ -4,7 +4,7 @@ import { Button } from "@fluentui/react-components";
 import { Add24Regular, Delete24Regular } from "@fluentui/react-icons";
 import { useMsal } from "@azure/msal-react";
 
-import { SimpleAPIResponse, uploadFileApi, deleteUploadedFileApi, listUploadedFilesApi } from "../../api";
+import { SimpleAPIResponse, uploadFileApi, deleteUploadedFileApi, listUploadedFilesApi, configApi } from "../../api";
 import { useLogin, getToken } from "../../authConfig";
 import styles from "./UploadFile.module.css";
 
@@ -22,6 +22,7 @@ export const UploadFile: React.FC<Props> = ({ className, disabled }: Props) => {
     const [uploadedFile, setUploadedFile] = useState<SimpleAPIResponse>();
     const [uploadedFileError, setUploadedFileError] = useState<string>();
     const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
+    const [showGroupError, setShowGroupError] = useState<boolean>(true);
 
     if (!useLogin) {
         throw new Error("The UploadFile component requires useLogin to be true");
@@ -39,6 +40,10 @@ export const UploadFile: React.FC<Props> = ({ className, disabled }: Props) => {
             if (!idToken) {
                 throw new Error("No authentication token available");
             }
+            configApi(idToken).then(config => {
+                setShowGroupError(!config.hasGroupAccess);
+            });
+
             listUploadedFiles(idToken);
         } catch (error) {
             console.error(error);
@@ -100,7 +105,44 @@ export const UploadFile: React.FC<Props> = ({ className, disabled }: Props) => {
         }
     };
 
-    return (
+    {
+        /* <div className={styles.chatRoot}>
+            <div className={styles.chatContainer}>
+                <div className={styles.chatEmptyState}>
+                    <h1 className={styles.chatEmptyStateTitle}>You do not have access to this application.</h1>
+                    <h2 className={styles.chatEmptyStateSubtitle}>
+                        You can obtain access from Karol Pieciukiewicz in <a href="https://www.linkedin.com/in/karol-pieciukiewicz/">LinkedIn portal</a>
+                    </h2>
+                    <h2 className={styles.chatEmptyStateSubtitle}>
+                        Access is granted periodically. Subscribe for updates and leave a comment and reaction under the post about the new access parts. The
+                        first reactions will be granted access.
+                    </h2>
+                    <h2 className={styles.chatEmptyStateSubtitle}>
+                        In the application, you can index your own documents and interact with them. Each user has access only to their own documents.
+                    </h2>
+                </div>
+            </div>
+        </div> */
+    }
+
+    return showGroupError ? (
+        <div className={`${styles.container} ${className ?? ""}`}>
+            <div>
+                <Button id="calloutButton" icon={<Add24Regular />} disabled={disabled} onClick={handleButtonClick}>
+                    Manage file uploads
+                </Button>
+                <h3>You do not have access to this application.</h3>
+                <h4>
+                    You can obtain access from Karol Pieciukiewicz in <a href="https://www.linkedin.com/in/karol-pieciukiewicz/">LinkedIn portal</a>
+                </h4>
+                <h4>
+                    Access is granted periodically. Subscribe for updates and leave a comment and reaction under the post about the new access parts. The first
+                    reactions will be granted access. After access is granted, I will replay to your comment.
+                </h4>
+                <h4>In the application, you can index your own documents and interact with them. Each user has access only to their own documents.</h4>
+            </div>
+        </div>
+    ) : (
         <div className={`${styles.container} ${className ?? ""}`}>
             <div>
                 <Button id="calloutButton" icon={<Add24Regular />} disabled={disabled} onClick={handleButtonClick}>

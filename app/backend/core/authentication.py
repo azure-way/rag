@@ -207,7 +207,7 @@ class AuthenticationHelper:
 
         return groups
 
-    async def get_auth_claims_if_enabled(self, headers: dict) -> dict[str, Any]:
+    async def get_auth_claims_if_enabled(self, headers: dict, validateGroup: bool = False) -> dict[str, Any]:
         if not self.use_authentication:
             return {}
         try:
@@ -216,7 +216,7 @@ class AuthenticationHelper:
             # https://learn.microsoft.com/entra/identity-platform/v2-oauth2-on-behalf-of-flow
             auth_token = AuthenticationHelper.get_token_auth_header(headers)
             # Validate the token before use
-            await self.validate_access_token(auth_token)
+            await self.validate_access_token(auth_token, validateGroup)
 
             # Use the on-behalf-of-flow to acquire another token for use with Microsoft Graph
             # See https://learn.microsoft.com/entra/identity-platform/v2-oauth2-on-behalf-of-flow for more information
@@ -298,7 +298,7 @@ class AuthenticationHelper:
             ) from exc
     
     # See https://github.com/Azure-Samples/ms-identity-python-on-behalf-of/blob/939be02b11f1604814532fdacc2c2eccd198b755/FlaskAPI/helpers/authorization.py#L44
-    async def validate_access_token(self, token: str):
+    async def validate_access_token(self, token: str, validateGroup: bool):
         """
         Validate an access token is issued by Entra
         """
@@ -356,7 +356,7 @@ class AuthenticationHelper:
                 401,
             )
 
-        if self.valid_group not in groups:
+        if validateGroup and self.valid_group not in groups:
             raise AuthError(
                 {
                     "code": "invalid_header", 

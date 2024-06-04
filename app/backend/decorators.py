@@ -52,7 +52,25 @@ def authenticated(route_fn: Callable[[Dict[str, Any]], Any]):
             auth_claims = await auth_helper.get_auth_claims_if_enabled(request.headers)
         except AuthError as auth_error:
             if auth_error.group_error: 
-                logging.debug("authenticated::Group permissions error %s", auth_error.description)
+                abort(403, auth_error.description)
+            abort(403)
+
+        return await route_fn(auth_claims)
+
+    return auth_handler
+
+def authenticatedGroup(route_fn: Callable[[Dict[str, Any]], Any]):
+    """
+    Decorator for routes that might require access control. Unpacks Authorization header information into an auth_claims dictionary
+    """
+
+    @wraps(route_fn)
+    async def auth_handler():
+        auth_helper = current_app.config[CONFIG_AUTH_CLIENT]
+        try:
+            auth_claims = await auth_helper.get_auth_claims_if_enabled(request.headers, True)
+        except AuthError as auth_error:
+            if auth_error.group_error: 
                 abort(403, auth_error.description)
             abort(403)
 
