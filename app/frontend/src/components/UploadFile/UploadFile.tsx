@@ -140,13 +140,13 @@ export const UploadFile: React.FC<Props> = ({ className, disabled }: Props) => {
                         onDismiss={() => setIsCalloutVisible(false)}
                         setInitialFocus
                     >
-                        <h3>You do not have access to this application.</h3>
+                        <h3>You do not have access to upload own files.</h3>
                         <h4>
                             You can obtain access from Karol Pieciukiewicz in <a href="https://www.linkedin.com/in/karol-pieciukiewicz/">LinkedIn portal</a>
                         </h4>
                         <h4>
                             Access is granted periodically. Subscribe for updates and leave a comment and reaction under the post about the new access parts.
-                            The first reactions will be granted access. After access is granted, I will replay to your comment.
+                            After access is granted, I will replay to your comment.
                         </h4>
                         <h4>In the application, you can index your own documents and interact with them. Each user has access only to their own documents.</h4>
                     </Callout>
