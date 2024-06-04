@@ -74,7 +74,7 @@ from config import (
     CONFIG_VECTOR_SEARCH_ENABLED,
 )
 from core.authentication import AuthError, AuthenticationHelper
-from decorators import authenticated, authenticated_path
+from decorators import authenticated, authenticated_path, authenticatedGroup
 from error import error_dict, error_response
 from prepdocs import (
     clean_key_if_exists,
