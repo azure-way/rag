@@ -8,6 +8,7 @@ import styles from "./Chat.module.css";
 import {
     chatApi,
     configApi,
+    getSpeechApi,
     RetrievalMode,
     ChatAppResponse,
     ChatAppResponseOrError,
@@ -53,7 +54,7 @@ const Chat = () => {
     const chatMessageStreamEnd = useRef<HTMLDivElement | null>(null);
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [isStreaming, setIsStreaming] = useState<boolean>(false); 
+    const [isStreaming, setIsStreaming] = useState<boolean>(false);
     const [error, setError] = useState<unknown>();
 
     const [activeCitation, setActiveCitation] = useState<string>();
@@ -62,10 +63,15 @@ const Chat = () => {
     const [selectedAnswer, setSelectedAnswer] = useState<number>(0);
     const [answers, setAnswers] = useState<[user: string, response: ChatAppResponse][]>([]);
     const [streamedAnswers, setStreamedAnswers] = useState<[user: string, response: ChatAppResponse][]>([]);
+    const [speechUrls, setSpeechUrls] = useState<(string | null)[]>([]);
+
     const [showGPT4VOptions, setShowGPT4VOptions] = useState<boolean>(false);
     const [showSemanticRankerOption, setShowSemanticRankerOption] = useState<boolean>(false);
     const [showVectorOption, setShowVectorOption] = useState<boolean>(false);
     const [showUserUpload, setShowUserUpload] = useState<boolean>(false);
+    const [showSpeechInput, setShowSpeechInput] = useState<boolean>(false);
+    const [showSpeechOutputBrowser, setShowSpeechOutputBrowser] = useState<boolean>(false);
+    const [showSpeechOutputAzure, setShowSpeechOutputAzure] = useState<boolean>(false);
     const [showGroupError, setShowGroupError] = useState<boolean>(false);
 
     if (!useLogin) {
@@ -85,12 +91,16 @@ const Chat = () => {
                     setRetrievalMode(RetrievalMode.Text);
                 }
                 setShowUserUpload(config.showUserUpload);
-                setShowGroupError(!config.hasGroupAccess)
+                setShowGroupError(!config.hasGroupAccess);
+                setShowSpeechInput(config.showSpeechInput);
+                setShowSpeechOutputBrowser(config.showSpeechOutputBrowser);
+                setShowSpeechOutputAzure(config.showSpeechOutputAzure);
+                setShowGroupError(!config.hasGroupAccess);
             });
         });
     };
 
-    const handleAsyncRequest = async (question: string, answers: [string, ChatAppResponse][], setAnswers: Function, responseBody: ReadableStream<any>) => {
+    const handleAsyncRequest = async (question: string, answers: [string, ChatAppResponse][], responseBody: ReadableStream<any>) => {
         let answer: string = "";
         let askResponse: ChatAppResponse = {} as ChatAppResponse;
 
@@ -132,7 +142,7 @@ const Chat = () => {
         };
         return fullResponse;
     };
-    
+
     const makeApiRequest = async (question: string) => {
         lastQuestionRef.current = question;
 
@@ -181,7 +191,7 @@ const Chat = () => {
                 throw Error("No response body");
             }
             if (shouldStream) {
-                const parsedResponse: ChatAppResponse = await handleAsyncRequest(question, answers, setAnswers, response.body);
+                const parsedResponse: ChatAppResponse = await handleAsyncRequest(question, answers, response.body);
                 setAnswers([...answers, [question, parsedResponse]]);
             } else {
                 const parsedResponse: ChatAppResponseOrError = await response.json();
@@ -214,6 +224,18 @@ const Chat = () => {
         getConfig();
     }, []);
 
+    useEffect(() => {
+        if (answers && showSpeechOutputAzure) {
+            // For each answer that is missing a speech URL, fetch the speech URL
+            for (let i = 0; i < answers.length; i++) {
+                if (!speechUrls[i]) {
+                    getSpeechApi(answers[i][1].choices[0].message.content).then(speechUrl => {
+                        setSpeechUrls([...speechUrls.slice(0, i), speechUrl, ...speechUrls.slice(i + 1)]);
+                    });
+                }
+            }
+        }
+    }, [answers]);
 
     const onPromptTemplateChange = (_ev?: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
         setPromptTemplate(newValue || "");
@@ -292,245 +314,258 @@ const Chat = () => {
         setSelectedAnswer(index);
     };
 
-    return (
-        showGroupError ? (
-            <div className={styles.chatRoot}>
-                <div className={styles.chatContainer}>
-                    <div className={styles.chatEmptyState}>
-                        <h1 className={styles.chatEmptyStateTitle}>You do not have access to this application.</h1>
-                        <h2 className={styles.chatEmptyStateSubtitle}>You can obtain access from Karol Pieciukiewicz in <a href="https://www.linkedin.com/in/karol-pieciukiewicz/">LinkedIn portal</a></h2>
-                        <h2 className={styles.chatEmptyStateSubtitle}>Access is granted periodically. Subscribe for updates and leave a comment and reaction under the post about the new access parts. The first reactions will be granted access.</h2>
-                        <h2 className={styles.chatEmptyStateSubtitle}>In the application, you can index your own documents and interact with them. Each user has access only to their own documents.</h2>
-                    </div>
+    return showGroupError ? (
+        <div className={styles.chatRoot}>
+            <div className={styles.chatContainer}>
+                <div className={styles.chatEmptyState}>
+                    <h1 className={styles.chatEmptyStateTitle}>You do not have access to this application.</h1>
+                    <h2 className={styles.chatEmptyStateSubtitle}>
+                        You can obtain access from Karol Pieciukiewicz in <a href="https://www.linkedin.com/in/karol-pieciukiewicz/">LinkedIn portal</a>
+                    </h2>
+                    <h2 className={styles.chatEmptyStateSubtitle}>
+                        Access is granted periodically. Subscribe for updates and leave a comment and reaction under the post about the new access parts. The
+                        first reactions will be granted access.
+                    </h2>
+                    <h2 className={styles.chatEmptyStateSubtitle}>
+                        In the application, you can index your own documents and interact with them. Each user has access only to their own documents.
+                    </h2>
                 </div>
             </div>
-        ) : (
-            <div className={styles.container}>
-                <div className={styles.commandsContainer}>
-                    <ClearChatButton className={styles.commandButton} onClick={clearChat} disabled={!lastQuestionRef.current || isLoading} />
-                    {showUserUpload && <UploadFile className={styles.commandButton} disabled={!isLoggedIn(client)} />}
-                    <SettingsButton className={styles.commandButton} onClick={() => setIsConfigPanelOpen(!isConfigPanelOpen)} />
-                </div>
-                <div className={styles.chatRoot}>
-                    <div className={styles.chatContainer}>
-                        {!lastQuestionRef.current ? (
-                            <div className={styles.chatEmptyState}>
-                                <SparkleFilled fontSize={"120px"} primaryFill={"rgba(115, 118, 225, 1)"} aria-hidden="true" aria-label="Chat logo" />
-                                <h1 className={styles.chatEmptyStateTitle}>Chat with your data</h1>
-                                <h2 className={styles.chatEmptyStateSubtitle}>Ask anything or try an example</h2>
-                                <ExampleList onExampleClicked={onExampleClicked} useGPT4V={useGPT4V} />
-                            </div>
-                        ) : (
-                            <div className={styles.chatMessageStream}>
-                                {isStreaming &&
-                                    streamedAnswers.map((streamedAnswer, index) => (
-                                        <div key={index}>
-                                            <UserChatMessage message={streamedAnswer[0]} />
-                                            <div className={styles.chatMessageGpt}>
-                                                <Answer
-                                                    isStreaming={true}
-                                                    key={index}
-                                                    answer={streamedAnswer[1]}
-                                                    isSelected={false}
-                                                    onCitationClicked={c => onShowCitation(c, index)}
-                                                    onThoughtProcessClicked={() => onToggleTab(AnalysisPanelTabs.ThoughtProcessTab, index)}
-                                                    onSupportingContentClicked={() => onToggleTab(AnalysisPanelTabs.SupportingContentTab, index)}
-                                                    onFollowupQuestionClicked={q => makeApiRequest(q)}
-                                                    showFollowupQuestions={useSuggestFollowupQuestions && answers.length - 1 === index}
-                                                />
-                                            </div>
-                                        </div>
-                                    ))}
-                                {!isStreaming &&
-                                    answers.map((answer, index) => (
-                                        <div key={index}>
-                                            <UserChatMessage message={answer[0]} />
-                                            <div className={styles.chatMessageGpt}>
-                                                <Answer
-                                                    isStreaming={false}
-                                                    key={index}
-                                                    answer={answer[1]}
-                                                    isSelected={selectedAnswer === index && activeAnalysisPanelTab !== undefined}
-                                                    onCitationClicked={c => onShowCitation(c, index)}
-                                                    onThoughtProcessClicked={() => onToggleTab(AnalysisPanelTabs.ThoughtProcessTab, index)}
-                                                    onSupportingContentClicked={() => onToggleTab(AnalysisPanelTabs.SupportingContentTab, index)}
-                                                    onFollowupQuestionClicked={q => makeApiRequest(q)}
-                                                    showFollowupQuestions={useSuggestFollowupQuestions && answers.length - 1 === index}
-                                                />
-                                            </div>
-                                        </div>
-                                    ))}
-                                {isLoading && (
-                                    <>
-                                        <UserChatMessage message={lastQuestionRef.current} />
-                                        <div className={styles.chatMessageGptMinWidth}>
-                                            <AnswerLoading />
-                                        </div>
-                                    </>
-                                )}
-                                {error ? (
-                                    <>
-                                        <UserChatMessage message={lastQuestionRef.current} />
-                                        <div className={styles.chatMessageGptMinWidth}>
-                                            <AnswerError error={error.toString()} onRetry={() => makeApiRequest(lastQuestionRef.current)} />
-                                        </div>
-                                    </>
-                                ) : null}
-                                <div ref={chatMessageStreamEnd} />
-                            </div>
-                        )}
-
-                        <div className={styles.chatInput}>
-                            <QuestionInput
-                                clearOnSend
-                                placeholder="Type a new question (e.g. does my plan cover annual eye exams?)"
-                                disabled={isLoading}
-                                onSend={question => makeApiRequest(question)}
-                            />
+        </div>
+    ) : (
+        <div className={styles.container}>
+            <div className={styles.commandsContainer}>
+                <ClearChatButton className={styles.commandButton} onClick={clearChat} disabled={!lastQuestionRef.current || isLoading} />
+                {showUserUpload && <UploadFile className={styles.commandButton} disabled={!isLoggedIn(client)} />}
+                <SettingsButton className={styles.commandButton} onClick={() => setIsConfigPanelOpen(!isConfigPanelOpen)} />
+            </div>
+            <div className={styles.chatRoot}>
+                <div className={styles.chatContainer}>
+                    {!lastQuestionRef.current ? (
+                        <div className={styles.chatEmptyState}>
+                            <SparkleFilled fontSize={"120px"} primaryFill={"rgba(115, 118, 225, 1)"} aria-hidden="true" aria-label="Chat logo" />
+                            <h1 className={styles.chatEmptyStateTitle}>Chat with your data</h1>
+                            <h2 className={styles.chatEmptyStateSubtitle}>Ask anything or try an example</h2>
+                            <ExampleList onExampleClicked={onExampleClicked} useGPT4V={useGPT4V} />
                         </div>
-                    </div>
+                    ) : (
+                        <div className={styles.chatMessageStream}>
+                            {isStreaming &&
+                                streamedAnswers.map((streamedAnswer, index) => (
+                                    <div key={index}>
+                                        <UserChatMessage message={streamedAnswer[0]} />
+                                        <div className={styles.chatMessageGpt}>
+                                            <Answer
+                                                isStreaming={true}
+                                                key={index}
+                                                answer={streamedAnswer[1]}
+                                                isSelected={false}
+                                                onCitationClicked={c => onShowCitation(c, index)}
+                                                onThoughtProcessClicked={() => onToggleTab(AnalysisPanelTabs.ThoughtProcessTab, index)}
+                                                onSupportingContentClicked={() => onToggleTab(AnalysisPanelTabs.SupportingContentTab, index)}
+                                                onFollowupQuestionClicked={q => makeApiRequest(q)}
+                                                showFollowupQuestions={useSuggestFollowupQuestions && answers.length - 1 === index}
+                                                showSpeechOutputAzure={showSpeechOutputAzure}
+                                                showSpeechOutputBrowser={showSpeechOutputBrowser}
+                                                speechUrl={speechUrls[index]}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            {!isStreaming &&
+                                answers.map((answer, index) => (
+                                    <div key={index}>
+                                        <UserChatMessage message={answer[0]} />
+                                        <div className={styles.chatMessageGpt}>
+                                            <Answer
+                                                isStreaming={false}
+                                                key={index}
+                                                answer={answer[1]}
+                                                isSelected={selectedAnswer === index && activeAnalysisPanelTab !== undefined}
+                                                onCitationClicked={c => onShowCitation(c, index)}
+                                                onThoughtProcessClicked={() => onToggleTab(AnalysisPanelTabs.ThoughtProcessTab, index)}
+                                                onSupportingContentClicked={() => onToggleTab(AnalysisPanelTabs.SupportingContentTab, index)}
+                                                onFollowupQuestionClicked={q => makeApiRequest(q)}
+                                                showFollowupQuestions={useSuggestFollowupQuestions && answers.length - 1 === index}
+                                                showSpeechOutputAzure={showSpeechOutputAzure}
+                                                showSpeechOutputBrowser={showSpeechOutputBrowser}
+                                                speechUrl={speechUrls[index]}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            {isLoading && (
+                                <>
+                                    <UserChatMessage message={lastQuestionRef.current} />
+                                    <div className={styles.chatMessageGptMinWidth}>
+                                        <AnswerLoading />
+                                    </div>
+                                </>
+                            )}
+                            {error ? (
+                                <>
+                                    <UserChatMessage message={lastQuestionRef.current} />
+                                    <div className={styles.chatMessageGptMinWidth}>
+                                        <AnswerError error={error.toString()} onRetry={() => makeApiRequest(lastQuestionRef.current)} />
+                                    </div>
+                                </>
+                            ) : null}
+                            <div ref={chatMessageStreamEnd} />
+                        </div>
+                    )}
 
-                    {answers.length > 0 && activeAnalysisPanelTab && (
-                        <AnalysisPanel
-                            className={styles.chatAnalysisPanel}
-                            activeCitation={activeCitation}
-                            onActiveTabChanged={x => onToggleTab(x, selectedAnswer)}
-                            citationHeight="810px"
-                            answer={answers[selectedAnswer][1]}
-                            activeTab={activeAnalysisPanelTab}
+                    <div className={styles.chatInput}>
+                        <QuestionInput
+                            clearOnSend
+                            placeholder="Type a new question (e.g. does my plan cover annual eye exams?)"
+                            disabled={isLoading}
+                            onSend={question => makeApiRequest(question)}
+                            showSpeechInput={showSpeechInput}
+                        />
+                    </div>
+                </div>
+
+                {answers.length > 0 && activeAnalysisPanelTab && (
+                    <AnalysisPanel
+                        className={styles.chatAnalysisPanel}
+                        activeCitation={activeCitation}
+                        onActiveTabChanged={x => onToggleTab(x, selectedAnswer)}
+                        citationHeight="810px"
+                        answer={answers[selectedAnswer][1]}
+                        activeTab={activeAnalysisPanelTab}
+                    />
+                )}
+
+                <Panel
+                    headerText="Configure answer generation"
+                    isOpen={isConfigPanelOpen}
+                    isBlocking={false}
+                    onDismiss={() => setIsConfigPanelOpen(false)}
+                    closeButtonAriaLabel="Close"
+                    onRenderFooterContent={() => <DefaultButton onClick={() => setIsConfigPanelOpen(false)}>Close</DefaultButton>}
+                    isFooterAtBottom={true}
+                >
+                    <TextField
+                        className={styles.chatSettingsSeparator}
+                        defaultValue={promptTemplate}
+                        label="Override prompt template"
+                        multiline
+                        autoAdjustHeight
+                        onChange={onPromptTemplateChange}
+                    />
+
+                    <Slider
+                        className={styles.chatSettingsSeparator}
+                        label="Temperature"
+                        min={0}
+                        max={1}
+                        step={0.1}
+                        defaultValue={temperature}
+                        onChange={onTemperatureChange}
+                        showValue
+                        snapToStep
+                    />
+
+                    <SpinButton
+                        className={styles.chatSettingsSeparator}
+                        label="Minimum search score"
+                        min={0}
+                        step={0.01}
+                        defaultValue={minimumSearchScore.toString()}
+                        onChange={onMinimumSearchScoreChange}
+                    />
+
+                    <SpinButton
+                        className={styles.chatSettingsSeparator}
+                        label="Minimum reranker score"
+                        min={1}
+                        max={4}
+                        step={0.1}
+                        defaultValue={minimumRerankerScore.toString()}
+                        onChange={onMinimumRerankerScoreChange}
+                    />
+
+                    <SpinButton
+                        className={styles.chatSettingsSeparator}
+                        label="Retrieve this many search results:"
+                        min={1}
+                        max={50}
+                        defaultValue={retrieveCount.toString()}
+                        onChange={onRetrieveCountChange}
+                    />
+                    <TextField className={styles.chatSettingsSeparator} label="Exclude category" onChange={onExcludeCategoryChanged} />
+
+                    {showSemanticRankerOption && (
+                        <Checkbox
+                            className={styles.chatSettingsSeparator}
+                            checked={useSemanticRanker}
+                            label="Use semantic ranker for retrieval"
+                            onChange={onUseSemanticRankerChange}
+                        />
+                    )}
+                    <Checkbox
+                        className={styles.chatSettingsSeparator}
+                        checked={useSemanticCaptions}
+                        label="Use query-contextual summaries instead of whole documents"
+                        onChange={onUseSemanticCaptionsChange}
+                        disabled={!useSemanticRanker}
+                    />
+                    <Checkbox
+                        className={styles.chatSettingsSeparator}
+                        checked={useSuggestFollowupQuestions}
+                        label="Suggest follow-up questions"
+                        onChange={onUseSuggestFollowupQuestionsChange}
+                    />
+
+                    {showGPT4VOptions && (
+                        <GPT4VSettings
+                            gpt4vInputs={gpt4vInput}
+                            isUseGPT4V={useGPT4V}
+                            updateUseGPT4V={useGPT4V => {
+                                setUseGPT4V(useGPT4V);
+                            }}
+                            updateGPT4VInputs={inputs => setGPT4VInput(inputs)}
                         />
                     )}
 
-                    <Panel
-                        headerText="Configure answer generation"
-                        isOpen={isConfigPanelOpen}
-                        isBlocking={false}
-                        onDismiss={() => setIsConfigPanelOpen(false)}
-                        closeButtonAriaLabel="Close"
-                        onRenderFooterContent={() => <DefaultButton onClick={() => setIsConfigPanelOpen(false)}>Close</DefaultButton>}
-                        isFooterAtBottom={true}
-                    >
-                        <TextField
-                            className={styles.chatSettingsSeparator}
-                            defaultValue={promptTemplate}
-                            label="Override prompt template"
-                            multiline
-                            autoAdjustHeight
-                            onChange={onPromptTemplateChange}
+                    {showVectorOption && (
+                        <VectorSettings
+                            defaultRetrievalMode={retrievalMode}
+                            showImageOptions={useGPT4V && showGPT4VOptions}
+                            updateVectorFields={(options: VectorFieldOptions[]) => setVectorFieldList(options)}
+                            updateRetrievalMode={(retrievalMode: RetrievalMode) => setRetrievalMode(retrievalMode)}
                         />
+                    )}
 
-                        <Slider
-                            className={styles.chatSettingsSeparator}
-                            label="Temperature"
-                            min={0}
-                            max={1}
-                            step={0.1}
-                            defaultValue={temperature}
-                            onChange={onTemperatureChange}
-                            showValue
-                            snapToStep
-                        />
-
-                        <SpinButton
-                            className={styles.chatSettingsSeparator}
-                            label="Minimum search score"
-                            min={0}
-                            step={0.01}
-                            defaultValue={minimumSearchScore.toString()}
-                            onChange={onMinimumSearchScoreChange}
-                        />
-
-                        <SpinButton
-                            className={styles.chatSettingsSeparator}
-                            label="Minimum reranker score"
-                            min={1}
-                            max={4}
-                            step={0.1}
-                            defaultValue={minimumRerankerScore.toString()}
-                            onChange={onMinimumRerankerScoreChange}
-                        />
-
-                        <SpinButton
-                            className={styles.chatSettingsSeparator}
-                            label="Retrieve this many search results:"
-                            min={1}
-                            max={50}
-                            defaultValue={retrieveCount.toString()}
-                            onChange={onRetrieveCountChange}
-                        />
-                        <TextField className={styles.chatSettingsSeparator} label="Exclude category" onChange={onExcludeCategoryChanged} />
-
-                        {showSemanticRankerOption && (
-                            <Checkbox
-                                className={styles.chatSettingsSeparator}
-                                checked={useSemanticRanker}
-                                label="Use semantic ranker for retrieval"
-                                onChange={onUseSemanticRankerChange}
-                            />
-                        )}
+                    {useLogin && (
                         <Checkbox
                             className={styles.chatSettingsSeparator}
-                            checked={useSemanticCaptions}
-                            label="Use query-contextual summaries instead of whole documents"
-                            onChange={onUseSemanticCaptionsChange}
-                            disabled={!useSemanticRanker}
+                            checked={useOidSecurityFilter || requireAccessControl}
+                            label="Use oid security filter"
+                            disabled={!isLoggedIn(client) || requireAccessControl}
+                            onChange={onUseOidSecurityFilterChange}
                         />
+                    )}
+                    {useLogin && (
                         <Checkbox
                             className={styles.chatSettingsSeparator}
-                            checked={useSuggestFollowupQuestions}
-                            label="Suggest follow-up questions"
-                            onChange={onUseSuggestFollowupQuestionsChange}
+                            checked={useGroupsSecurityFilter || requireAccessControl}
+                            label="Use groups security filter"
+                            disabled={!isLoggedIn(client) || requireAccessControl}
+                            onChange={onUseGroupsSecurityFilterChange}
                         />
+                    )}
 
-                        {showGPT4VOptions && (
-                            <GPT4VSettings
-                                gpt4vInputs={gpt4vInput}
-                                isUseGPT4V={useGPT4V}
-                                updateUseGPT4V={useGPT4V => {
-                                    setUseGPT4V(useGPT4V);
-                                }}
-                                updateGPT4VInputs={inputs => setGPT4VInput(inputs)}
-                            />
-                        )}
-
-                        {showVectorOption && (
-                            <VectorSettings
-                                showImageOptions={useGPT4V && showGPT4VOptions}
-                                updateVectorFields={(options: VectorFieldOptions[]) => setVectorFieldList(options)}
-                                updateRetrievalMode={(retrievalMode: RetrievalMode) => setRetrievalMode(retrievalMode)}
-                            />
-                        )}
-
-                        {useLogin && (
-                            <Checkbox
-                                className={styles.chatSettingsSeparator}
-                                checked={useOidSecurityFilter || requireAccessControl}
-                                label="Use oid security filter"
-                                disabled={!isLoggedIn(client) || requireAccessControl}
-                                onChange={onUseOidSecurityFilterChange}
-                            />
-                        )}
-                        {useLogin && (
-                            <Checkbox
-                                className={styles.chatSettingsSeparator}
-                                checked={useGroupsSecurityFilter || requireAccessControl}
-                                label="Use groups security filter"
-                                disabled={!isLoggedIn(client) || requireAccessControl}
-                                onChange={onUseGroupsSecurityFilterChange}
-                            />
-                        )}
-
-                        <Checkbox
-                            className={styles.chatSettingsSeparator}
-                            checked={shouldStream}
-                            label="Stream chat completion responses"
-                            onChange={onShouldStreamChange}
-                        />
-                        {useLogin && <TokenClaimsDisplay />}
-                    </Panel>
-                </div>
+                    <Checkbox
+                        className={styles.chatSettingsSeparator}
+                        checked={shouldStream}
+                        label="Stream chat completion responses"
+                        onChange={onShouldStreamChange}
+                    />
+                    {useLogin && <TokenClaimsDisplay />}
+                </Panel>
             </div>
-        )
+        </div>
     );
 };
 
