@@ -105,30 +105,10 @@ export const UploadFile: React.FC<Props> = ({ className, disabled }: Props) => {
         }
     };
 
-    {
-        /* <div className={styles.chatRoot}>
-            <div className={styles.chatContainer}>
-                <div className={styles.chatEmptyState}>
-                    <h1 className={styles.chatEmptyStateTitle}>You do not have access to this application.</h1>
-                    <h2 className={styles.chatEmptyStateSubtitle}>
-                        You can obtain access from Karol Pieciukiewicz in <a href="https://www.linkedin.com/in/karol-pieciukiewicz/">LinkedIn portal</a>
-                    </h2>
-                    <h2 className={styles.chatEmptyStateSubtitle}>
-                        Access is granted periodically. Subscribe for updates and leave a comment and reaction under the post about the new access parts. The
-                        first reactions will be granted access.
-                    </h2>
-                    <h2 className={styles.chatEmptyStateSubtitle}>
-                        In the application, you can index your own documents and interact with them. Each user has access only to their own documents.
-                    </h2>
-                </div>
-            </div>
-        </div> */
-    }
-
     return showGroupError ? (
         <div className={`${styles.container} ${className ?? ""}`}>
             <div>
-                <Button id="calloutButton" icon={<Add24Regular />} disabled={disabled} onClick={handleButtonClick}>
+                <Button id="calloutButton" icon={<Add24Regular />} onClick={handleButtonClick}>
                     Manage file uploads
                 </Button>
                 {isCalloutVisible && (
@@ -142,13 +122,10 @@ export const UploadFile: React.FC<Props> = ({ className, disabled }: Props) => {
                     >
                         <h3>You do not have access to upload own files.</h3>
                         <h4>
-                            You can obtain access from Karol Pieciukiewicz in <a href="https://www.linkedin.com/in/karol-pieciukiewicz/">LinkedIn portal</a>
+                            Contact Karol Pieciukiewicz in <a href="https://www.linkedin.com/in/karol-pieciukiewicz/">LinkedIn portal</a> for granting access.
                         </h4>
-                        <h4>
-                            Access is granted periodically. Subscribe for updates and leave a comment and reaction under the post about the new access parts.
-                            After access is granted, I will replay to your comment.
-                        </h4>
-                        <h4>In the application, you can index your own documents and interact with them. Each user has access only to their own documents.</h4>
+                        <h4>Please remmember to create account in first place, then I can gran you access.</h4>
+                        <h4>To keep your files available only for you, adjust security filters in Developer settings</h4>
                     </Callout>
                 )}
             </div>
