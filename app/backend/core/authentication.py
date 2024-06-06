@@ -292,6 +292,8 @@ class AuthenticationHelper:
             if self.valid_group not in groups:
                 return False
             return True
+        except AuthError as e:
+            return False
         except Exception as exc:
             raise AuthError(
                 {"code": "invalid_header", "description": "Unable to parse authorization token."}, 401
