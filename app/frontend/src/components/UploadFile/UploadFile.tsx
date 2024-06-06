@@ -124,7 +124,7 @@ export const UploadFile: React.FC<Props> = ({ className, disabled }: Props) => {
                         <h4>
                             Contact Karol Pieciukiewicz in <a href="https://www.linkedin.com/in/karol-pieciukiewicz/">LinkedIn portal</a> for granting access.
                         </h4>
-                        <h4>Please remmember to create account in first place, then I can gran you access.</h4>
+                        <h4>Please remmember to create account in first place, then I can grant you access.</h4>
                         <h4>To keep your files available only for you, adjust security filters in Developer settings</h4>
                     </Callout>
                 )}
