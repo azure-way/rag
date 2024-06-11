@@ -69,9 +69,7 @@ def authenticatedGroup(route_fn: Callable[[Dict[str, Any]], Any]):
         auth_helper = current_app.config[CONFIG_AUTH_CLIENT]
         try:
             auth_claims = await auth_helper.get_auth_claims_if_enabled(request.headers, True)
-        except AuthError as auth_error:
-            if auth_error.group_error: 
-                abort(403, auth_error.description)
+        except AuthError:
             abort(403)
 
         return await route_fn(auth_claims)
